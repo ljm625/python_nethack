@@ -112,7 +112,48 @@ def client_sender(buffer):
         client.close()
 
 def server_loop():
+    global target
+
+    # 如果没有定义目标，那么我们监听所有端口
+    if not len(target):
+        target = "0.0.0.0"  
+    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    server.bind((target,port))
+    server.listen(5)
+    while True:
+        client_socket, addr = server.accept()
+        # 分拆一个thread处理客户
+        client_thread=threading.Thread(target=client_handler,args=(client_socket,))
+        client_thread.start()
+
+def run_command(command=""):
+    # 执行命令
+
+    command= command.rstrip()
+    # 运行命令，输出结果
+    try:
+        output = subprocess.check_output(command,stderr = subprocess.STDOUT,shell=True)
+    except:
+        output = "Failed to execute command. \r\n"
     
+    return output
+
+def client_handler(client_socket):
+    global upload
+    global execute
+    global command
+
+    if len(upload_dest):
+        # 读取字符，写给目标
+        file_buffer =""
+
+        while True:
+            data = client_socket.recv(1024)
+            if not data:
+                break
+            else:
+                file_buffer+=data
+                
 
     
 
